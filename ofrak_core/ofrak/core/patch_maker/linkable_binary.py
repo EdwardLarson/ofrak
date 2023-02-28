@@ -6,7 +6,7 @@ from typing import Dict, Iterable, Optional, Tuple
 
 from ofrak.component.modifier import Modifier
 from ofrak.core.addressable import Addressable
-from ofrak_type.architecture import InstructionSetMode
+from ofrak_type import InstructionSetMode, LinkableSymbolType, NotFoundError
 from ofrak.core.binary import GenericBinary
 from ofrak.core.complex_block import ComplexBlock
 from ofrak.core.label import LabeledAddress
@@ -17,10 +17,9 @@ from ofrak.service.resource_service_i import (
     ResourceAttributeValueFilter,
     ResourceAttributeValuesFilter,
 )
-from ofrak.core.patch_maker.linkable_symbol import LinkableSymbol, LinkableSymbolType
+from ofrak.core.patch_maker.linkable_symbol import LinkableSymbol
 from ofrak_patch_maker.model import BOM, PatchRegionConfig
 from ofrak_patch_maker.toolchain.model import Segment
-from ofrak_type.error import NotFoundError
 
 LOGGER = logging.getLogger()
 
