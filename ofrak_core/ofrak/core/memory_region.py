@@ -2,6 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import Iterable
 
+from ofrak.model.tag_model import ResourceTag
+
 from ofrak.core.addressable import Addressable
 from ofrak.model.resource_model import index, ResourceAttributes
 from ofrak.model.viewable_tag_model import AttributesType
@@ -85,6 +87,7 @@ class MemoryRegion(Addressable):
         self,
         child_mr: "MemoryRegion",
         additional_attributes: Iterable[ResourceAttributes] = (),
+        additional_tags: Iterable[ResourceTag] = (),
     ) -> Resource:
         """
         Create a child memory region that is mapped into this memory region.
@@ -113,6 +116,7 @@ class MemoryRegion(Addressable):
             child_mr,
             data_range=Range(start_offset, end_offset),
             additional_attributes=additional_attributes,
+            additional_tags=additional_tags,
         )
 
     @staticmethod
