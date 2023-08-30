@@ -1,6 +1,6 @@
 ghidra_install:
-  path: /opt/rbs/ghidra_10.1.2_PUBLIC
-  log_file: ~/.ghidra/.ghidra_10.1.2_PUBLIC/application.log
+  path: /opt/rbs/ghidra_10.3.2_PUBLIC
+  log_file: ~/.ghidra/.ghidra_10.3.2_PUBLIC/application.log
 
 server:
   user: root
