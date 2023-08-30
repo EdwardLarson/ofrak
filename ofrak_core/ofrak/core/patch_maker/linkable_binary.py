@@ -71,7 +71,12 @@ class LinkableBinary(GenericBinary):
         )
 
     async def get_symbols(
-        self, *, name: Optional[str] = None, vaddr: Optional[int] = None
+        self,
+        *,
+        name: Optional[str] = None,
+        vaddr: Optional[int] = None,
+        names: Iterable[str] = (),
+        vaddrs: Iterable[int] = (),
     ) -> Iterable[LinkableSymbol]:
         """
         Get exactly all LinkableSymbols from this LinkableBinary matching a given name,
@@ -80,6 +85,8 @@ class LinkableBinary(GenericBinary):
 
         :param name: Name of the symbols to look for.
         :param vaddr: Virtual address of the symbols to look for.
+        :param names: Multiple names of symbols to look for.
+        :param vaddr: Multiple virtual addresses of symbols to look for.
 
         :return: All LinkableSymbol with the given name and/or vaddr.
 
@@ -92,6 +99,18 @@ class LinkableBinary(GenericBinary):
             )
         if name is not None:
             attributes_filters.append(ResourceAttributeValueFilter(LinkableSymbol.Label, name))
+            attributes_filters.append(ResourceAttributeValueFilter(ComplexBlock.Symbol, name))
+
+        if vaddrs:
+            attributes_filters.append(
+                ResourceAttributeValuesFilter(LinkableSymbol.VirtualAddress, tuple(vaddrs))
+            )
+
+        if names is not None:
+            # attributes_filters.append(ResourceAttributeValuesFilter(LinkableSymbol.Label, tuple(names)))
+            attributes_filters.append(
+                ResourceAttributeValuesFilter(ComplexBlock.Symbol, tuple(names))
+            )
 
         return await self.resource.get_descendants_as_view(
             LinkableSymbol,
@@ -204,17 +223,16 @@ class LinkableBinary(GenericBinary):
         argument to PatchMaker.make_fem(...).
         """
         stubs: Dict[str, Tuple[Segment, ...]] = dict()
-        for symbol in await self.get_symbols():
-            if symbol.name in unresolved_symbols:
-                stubs_file = os.path.join(build_tmp_dir, f"stub_{symbol.name}.as")
-                stub_info = symbol.get_stub_info()
-                stub_body = "\n".join(
-                    stub_info.asm_prefixes + [f".global {symbol.name}", f"{symbol.name}:", ""]
-                )
+        for symbol in await self.get_symbols(names=unresolved_symbols):
+            stubs_file = os.path.join(build_tmp_dir, f"stub_{symbol.name}.as")
+            stub_info = symbol.get_stub_info()
+            stub_body = "\n".join(
+                stub_info.asm_prefixes + [f".global {symbol.name}", f"{symbol.name}:", ""]
+            )
 
-                with open(stubs_file, "w+") as f:
-                    f.write(stub_body)
-                stubs[stubs_file] = stub_info.segments
+            with open(stubs_file, "w+") as f:
+                f.write(stub_body)
+            stubs[stubs_file] = stub_info.segments
 
         if stubs:
             stubs_bom = patch_maker.make_bom(

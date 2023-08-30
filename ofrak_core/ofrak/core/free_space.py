@@ -135,7 +135,7 @@ class Allocatable(ResourceView):
         # Allocate largest segments first
         segments_to_allocate.sort(key=lambda o_s: o_s[1].length, reverse=True)
         segments_by_object: Dict[str, List[Segment]] = defaultdict(list)
-        for obj, segment in segments_to_allocate:
+        for n, (obj, segment) in enumerate(segments_to_allocate):
             vaddr, final_size = 0, 0
             if segment.length == 0:
                 continue
@@ -160,7 +160,7 @@ class Allocatable(ResourceView):
             if vaddr == 0 or final_size == 0:
                 raise FreeSpaceAllocationError(
                     f"Could not find enough free space for access perms {possible_perms} and "
-                    f"length {segment.length}"
+                    f"length {segment.length}. Allocated {n} / {len(segments_to_allocate)} segments"
                 )
             segments_by_object[obj.path].append(
                 Segment(

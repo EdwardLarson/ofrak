@@ -1,6 +1,8 @@
+from typing import Tuple
+
 from ofrak_patch_maker.binary_parser.gnu import GNU_ELF_Parser
 from ofrak_patch_maker.toolchain.gnu import GNU_10_Toolchain
-from ofrak_patch_maker.toolchain.model import ToolchainConfig, ToolchainException
+from ofrak_patch_maker.toolchain.model import ToolchainConfig, ToolchainException, Segment
 from ofrak_type.architecture import InstructionSet, SubInstructionSet, ArchInfo
 import logging
 
@@ -26,7 +28,7 @@ class GNU_ARM_NONE_EABI_10_2_1_Toolchain(GNU_10_Toolchain):
 
     @property
     def segment_alignment(self) -> int:
-        return 4
+        return 16
 
     def _get_assembler_target(self, processor: ArchInfo):
         """
@@ -49,3 +51,11 @@ class GNU_ARM_NONE_EABI_10_2_1_Toolchain(GNU_10_Toolchain):
             return SubInstructionSet.ARMv7A.value.lower()
         else:
             raise ToolchainException("Assembler Target not provided and no valid default found!")
+
+    def get_bin_file_segments(self, path: str) -> Tuple[Segment, ...]:
+        segments = super().get_bin_file_segments(path)
+        for segment in segments:
+            if 0 != (segment.length % self.segment_alignment):
+                segment.length += self.segment_alignment - (segment.length % self.segment_alignment)
+
+        return segments
